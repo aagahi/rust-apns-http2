@@ -1,9 +1,9 @@
-Rust Sentry Lib
+Rust Apple Push Http2 Client Lib
 ==========
 
 
 Apple Push client based on http2 new API for rust ;)
-
+Very basic implementation but it seems to work... Cargo not published yet.
 
 
 ## Usage

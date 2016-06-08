@@ -104,8 +104,8 @@ impl APNS {
 mod tests {
     #[test]
     fn push_message() {
-        let apns = ::APNS::new("/Users/aagahi/works/github/rust-apns-http2/push-sandbox-cert.pem",
-                               "/Users/aagahi/works/github/rust-apns-http2/push-sandbox-key.pem",
+        let apns = ::APNS::new("./push-sandbox-cert.pem",
+                               "./push-sandbox-key.pem",
                                "api.development.push.apple.com");
         let json_str = format!("{{\"aps\":{{\"alert\":\"{}\"}}}}", "Dude where is my car?");
 
