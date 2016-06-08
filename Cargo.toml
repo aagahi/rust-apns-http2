@@ -1,0 +1,21 @@
+[package]
+name = "apnshttp2"
+version = "0.1.0"
+authors = ["Alexis Agahi <aagahi@prefetch.com>"]
+license = "MIT/Apache-2.0"
+readme = "Readme.md"
+repository = "https://github.com/aagahi/rust-apns-http2"
+homepage = "https://github.com/aagahi/rust-anps-http2"
+documentation = "https://github.com/aagahi/rust-anps-http2"
+description = """
+Apple Push client based on http2 new API for rust ;)
+"""
+
+
+[dependencies.openssl]
+version = "*"
+features = ["tlsv1_2", "npn", "alpn"]
+
+[dependencies.solicit]
+git = "https://github.com/aagahi/solicit"
+features = ["tls"]
