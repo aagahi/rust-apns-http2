@@ -21,6 +21,17 @@ and this to your crate root:
 extern crate apnshttp2;
 ```
 
+on OSX you might need to set OpenSSL path for compilation/linking stage. If you're using brew openssl with bash/zsh etc:
+
+  export OPENSSL_INCLUDE_DIR=`brew --prefix openssl`/include
+  export OPENSSL_LIB_DIR=`brew --prefix openssl`/lib
+
+or if you're using fish:
+
+  set -x OPENSSL_INCLUDE_DIR (brew --prefix openssl)/include
+  set -x OPENSSL_LIB_DIR (brew --prefix openssl)/lib
+  
+
 ## License
 
 Licensed under either of
