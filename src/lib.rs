@@ -20,11 +20,16 @@ use std::fs::File;
 
 pub struct APNS {
     ssl_context: SslContext,
+    bundle_id: String,
     gateway: String,
 }
 
 impl APNS {
-    pub fn new(cert_pem_path: &str, key_pem_path: &str, gateway: &str) -> APNS {
+    pub fn new(cert_pem_path: &str,
+               key_pem_path: &str,
+               gateway: &str,
+               app_bundle_id: &str)
+               -> APNS {
         let mut ctx = SslContext::new(Tlsv1_2).unwrap();
 
         let cert_reader = &mut BufReader::new(File::open(cert_pem_path).unwrap());
@@ -42,6 +47,7 @@ impl APNS {
 
         APNS {
             ssl_context: ctx,
+            bundle_id: app_bundle_id.to_owned(),
             gateway: gateway.to_owned(),
         }
     }
@@ -66,7 +72,9 @@ impl APNS {
         let content_type = b"content-type".to_vec();
         let app_json = b"application/json".to_vec();
         let json_header = Header::new(content_type, app_json);
-        let headers = vec![json_header];
+
+        let topic_header = Header::new(b"apns-topic".to_vec(), self.bundle_id.as_bytes());
+        let headers = vec![json_header, topic_header];
 
         match client.post(&path.into_bytes(),
                           &headers,
@@ -104,12 +112,14 @@ impl APNS {
 mod tests {
     #[test]
     fn push_message() {
-        let apns = ::APNS::new("./push-sandbox-cert.pem",
-                               "./push-sandbox-key.pem",
-                               "api.development.push.apple.com");
-        let json_str = format!("{{\"aps\":{{\"alert\":\"{}\"}}}}", "Dude where is my car?");
-
-        apns.push("8632ece25740824c3c322b65795fe791cc33c154fe9ee26096a0fe0bf137feee",
-                  &json_str);
+        let apns = ::APNS::new("./push-cert.pem",
+                               "./push-key.pem",
+                               "api.push.apple.com",
+                               "xxxxxxxxx");
+        let json_str = format!("{{\"aps\":{{\"alert\":\"{}\",\"badge\":1,\"sound\":\
+                                \"bingbong.aiff\"}}}}",
+                               "Dude!");
+        println!("Push JSON: {}", json_str);
+        apns.push("xxx", &json_str);
     }
 }
