@@ -18,6 +18,7 @@ use std::str;
 use std::io::BufReader;
 use std::fs::File;
 
+#[derive(Debug,Clone)]
 pub struct APNS {
     ssl_context: SslContext,
     bundle_id: String,
@@ -123,6 +124,7 @@ mod tests {
                                "./push-key.pem",
                                "api.push.apple.com",
                                "bundle_id");
+
 
         let mut client = apns.new_client().unwrap();
 
