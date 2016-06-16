@@ -52,43 +52,43 @@ impl APNS {
         }
     }
 
-    pub fn push(&self, device_token: &str, json_str: &str) {
 
+    pub fn new_client(&self) -> Result<SimpleClient<SslStream<TcpStream>>, HttpError> {
         let ssl = Ssl::new(&self.ssl_context).unwrap();
         // ssl.set_hostname(gateway);
-
 
         let raw_tcp = TcpStream::connect((self.gateway.as_str(), 443)).unwrap();
         let mut ssl_stream = SslStream::connect(ssl, raw_tcp).unwrap();
 
+
         solicit::http::client::write_preface(&mut ssl_stream).unwrap();
 
+        SimpleClient::with_stream(ssl_stream, self.gateway.clone(), HttpScheme::Https)
+    }
 
-        let mut client =
-            SimpleClient::with_stream(ssl_stream, self.gateway.clone(), HttpScheme::Https).unwrap();
 
-        let path = format!("/3/device/{}", device_token);
+    pub fn push_client(&self,
+                       client: &mut SimpleClient<SslStream<TcpStream>>,
+                       device_token: &str,
+                       json_str: &str)
+                       -> Result<(), HttpError> {
 
-        let content_type = b"content-type".to_vec();
-        let app_json = b"application/json".to_vec();
-        let json_header = Header::new(content_type, app_json);
 
+        let json_header = Header::new(b"content-type".to_vec(), b"application/json".to_vec());
         let topic_header = Header::new(b"apns-topic".to_vec(), self.bundle_id.as_bytes());
         let headers = vec![json_header, topic_header];
+
+        let path = format!("/3/device/{}", device_token);
 
         match client.post(&path.into_bytes(),
                           &headers,
                           json_str.to_string().into_bytes()) {
             Ok(response) => {
-                println!("Thread got response ... {}",
-                         response.status_code().unwrap());
+                println!("Response code: {}", response.status_code().unwrap());
                 println!("{}", str::from_utf8(&response.body).unwrap());
+                Ok(())
             }
-            Err(HttpError::PeerConnectionError(err)) => {
-                println!("Err ... {:?}\n{:?}", err, err.debug_str())
-            }
-            _ => println!("ERROR"),
-
+            Err(err) => Err(err),
         }
 
         // let response = post_resp.unwrap().recv().unwrap();
@@ -104,6 +104,12 @@ impl APNS {
         // }
         // println!("{}", str::from_utf8(&response.body).unwrap());
     }
+
+    pub fn push(&self, device_token: &str, json_str: &str) -> Result<(), HttpError> {
+        let mut client = try!(self.new_client());
+        try!(self.push_client(&mut client, device_token, json_str));
+        Ok(())
+    }
 }
 
 
@@ -111,15 +117,23 @@ impl APNS {
 #[cfg(test)]
 mod tests {
     #[test]
+    #[warn(unused_must_use)]
     fn push_message() {
         let apns = ::APNS::new("./push-cert.pem",
                                "./push-key.pem",
                                "api.push.apple.com",
-                               "xxxxxxxxx");
+                               "bundle_id");
+
+        let mut client = apns.new_client().unwrap();
+
+
         let json_str = format!("{{\"aps\":{{\"alert\":\"{}\",\"badge\":1,\"sound\":\
                                 \"bingbong.aiff\"}}}}",
-                               "Dude!");
+                               "Howdy!");
         println!("Push JSON: {}", json_str);
-        apns.push("xxx", &json_str);
+
+        apns.push_client(&mut client, "token_a", &json_str);
+        apns.push_client(&mut client, "token_b", &json_str);
+
     }
 }
