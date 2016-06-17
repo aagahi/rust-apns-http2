@@ -49,6 +49,25 @@ openssl pkcs12 -in push.p12 -clcerts -out push-cert.pem
 openssl pkcs12 -in push.p12 -nocerts -nodes | openssl rsa > push-key.pem
 ```
 
+### Usage
+
+You need to create a apns to retrive a https/ssl client and then you can use the client connection for each message sent to specific token.
+
+```rust
+let apns = APNS::new("./push-cert.pem", "./push-key.pem", "api.push.apple.com", "itune_bundle_id");
+
+let mut client = apns.new_client().unwrap();
+let json_str = format!("{{\"aps\":{{\"alert\":\"{}\",\"badge\":1,\"sound\":\
+                      \"bingbong.aiff\"}}}}",
+                       "Howdy!");
+apns.push_client(&mut client, "token_a", &json_str);
+apns.push_client(&mut client, "token_b", &json_str);
+```
+
+You can also check Apple Push documentation
+for [payload format](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/TheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH107-SW1)
+and [protocol](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/APNsProviderAPI.html#//apple_ref/doc/uid/TP40008194-CH101-SW15).
+
 ## License
 
 Licensed under either of
