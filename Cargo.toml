@@ -13,7 +13,7 @@ Apple Push client based on http2 new API for rust ;)
 
 
 [dependencies.openssl]
-version = "*"
+version = "0.7.14"
 features = ["tlsv1_2", "npn", "alpn"]
 
 [dependencies.solicit]
